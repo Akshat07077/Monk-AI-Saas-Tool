@@ -1,0 +1,21 @@
+.toastui-editor-ww-mode .toastui-editor-ww-container {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+.toastui-editor-defaultUI .toastui-editor-toolbar {
+    background-color: #333 !important;
+}
+
+.toastui-editor-defaultUI .toastui-editor-toolbar .toastui-editor-defaultToolbar {
+    background-color: #444 !important;
+}
+
+.toastui-editor-defaultUI .toastui-editor-md-preview {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+.toastui-editor-defaultUI .toastui-editor-toolbar button {
+    color: #e0e0e0 !important;
+}
