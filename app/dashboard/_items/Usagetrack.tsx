@@ -1,40 +1,65 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Ghost } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { HISTORY } from "../history/page";
 import { db } from "@/utils/db";
 import { AIOutput } from "@/utils/schema";
 import { eq } from "drizzle-orm";
 import { useUser } from "@clerk/nextjs";
 
+interface HISTORY {
+  aiResponse?: string;
+  createdBy: string;
+}
+
 function Usagetrack() {
   const { user } = useUser();
   const [totalUsage, setTotalUsage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    user && GetData();
+    if (user) {
+      GetData();
+    }
   }, [user]);
 
   const GetData = async () => {
-    // @ts-ignore
-    const result: HISTORY[] = await db
-      .select()
-      .from(AIOutput)
-      .where(eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress));
+    setLoading(true);
+    setError(null);
+    try {
+      // @ts-ignore
+      const result: HISTORY[] = await db
+        .select()
+        .from(AIOutput)
+        .where(
+          eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress || "")
+        );
 
-    GetTotalUsage(result);
+      GetTotalUsage(result);
+    } catch (error) {
+      setError("Failed to fetch usage data");
+      console.error("Error fetching usage data: ", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const GetTotalUsage = (result: HISTORY[]) => {
-    let total: number = 0;
+    let total = 0;
     result.forEach((element) => {
-      total = total + Number(element.aiResponse?.length);
+      total += element.aiResponse ? element.aiResponse.length : 0;
     });
 
     setTotalUsage(total);
-    console.log(total);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="mt-8 mb-14">
@@ -44,14 +69,13 @@ function Usagetrack() {
           <div
             className="bg-black h-2 rounded-full"
             style={{
-              width: (totalUsage / 100000) * 100 + "%",
+              width: Math.min((totalUsage / 100000) * 100, 100) + "%",
             }}
           ></div>
         </div>
         <h2 className="text-sm font-semibold text-slate-200 mt-2">
           {totalUsage} / 100000 Credits Used
         </h2>
-        <span className="font-semibold text-slate-200"></span>
       </div>
       <Button
         variant={"destructive"}
